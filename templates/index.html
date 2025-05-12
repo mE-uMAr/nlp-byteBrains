@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Upload</title>
+    <link rel="stylesheet" href="{% static "styles.css" %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+    <div class="container">
+        <div class="logo-container">
+            <div class="logo">
+                <span class="logo-icon">📊</span>
+            </div>
+        </div>
+        <h1 class="title">Document <span class="highlight">Upload</span></h1>
+        <p class="description">Upload your documents in PDF or DOC format for secure processing</p>
+        
+        <form method="post" id="upload-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="upload-area" id="upload-area">
+                <div class="upload-icon">
+                    <svg class="upload-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 16.5V17C7 19.7614 9.23858 22 12 22C14.7614 22 17 19.7614 17 17V16.5M12 2V14M12 2L7 7M12 2L17 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="upload-text">Drag & Drop your files here</div>
+                <div class="upload-subtext">or</div>
+                <div class="file-input-container">
+                    <input type="file" class="file-input" name="resume_file" accept=".pdf,.doc,.docx" id="file-upload">
+                    <label for="file-upload" class="file-input-label">
+                        <span class="btn-icon">+</span>
+                        <span>Browse Files</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="file-info" id="file-info">
+                <div class="file-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M13 2V9H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="file-details">
+                    <div class="file-name" id="file-name"></div>
+                    <div class="file-action" id="remove-file">Remove</div>
+                </div>
+            </div>
+            
+            <div class="format-info">
+                <div class="format-icon">ℹ️</div>
+                <div class="format-text">Supported formats: PDF, DOC, DOCX</div>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submit-btn" disabled>
+                <span class="btn-text">Upload Document</span>
+                <span class="btn-icon">→</span>
+            </button>
+        </form>
+    </div>
+    
+    <div class="loading-container" id="loading-container">
+        <div class="loading-card">
+            <div class="loading-spinner">
+                <div class="spinner-inner"></div>
+            </div>
+            <div class="loading-text">Processing your document...</div>
+            <div class="loading-progress">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}" role="alert">
+                        <div class="alert-icon">
+                            {% if message.tags == 'error' %}
+                                <svg class="alert-svg" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            {% elif message.tags == 'success' %}
+                                <svg class="alert-svg" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {% endif %}
+                        </div>
+                        <p>{{ message }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+    </div>
+
+    <script src="{% static "script.js" %}"></script>
+</body>
+</html>

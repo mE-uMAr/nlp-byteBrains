@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLP by Byte Brains - AI Visualization</title>
+    <style>
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background: #050510;
+            color: #ffffff;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* Canvas for neural network visualization */
+        #neural-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Digital rain effect */
+        #digital-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+        }
+
+        /* Main container */
+        .ai-experience-container {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+
+        /* Content wrapper */
+        .content-wrapper {
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 2s ease, transform 2s ease;
+            position: relative;
+            z-index: 3;
+        }
+
+        .content-wrapper.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .content-wrapper.fade-out {
+            opacity: 0;
+            transform: translateY(-30px);
+            transition: opacity 1.5s ease, transform 1.5s ease;
+        }
+
+        /* Logo container */
+        .logo-container {
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 40px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,212,255,0) 50%, rgba(9,9,121,0.2) 80%, rgba(0,212,255,0.3) 100%);
+            animation: pulse 4s infinite alternate;
+            z-index: 0;
+        }
+
+        .logo-image {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 0 30px rgba(0,212,255,0.5);
+        }
+
+        /* Title styles */
+        .title-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #00d4ff, #090979, #00d4ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientText 5s linear infinite;
+            letter-spacing: 5px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .title::before, .title::after {
+            content: 'NLP';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #090979);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0.3;
+            z-index: -1;
+            filter: blur(8px);
+        }
+
+        .title::before {
+            transform: translateX(-5px);
+            animation: glitchText 3s infinite alternate;
+        }
+
+        .title::after {
+            transform: translateX(5px);
+            animation: glitchText 2s infinite alternate-reverse;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 40px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            position: relative;
+            opacity: 0;
+            animation: typeWriter 2s 1s forwards;
+        }
+
+        .subtitle::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, #00d4ff, #090979);
+        }
+
+        /* Team members section */
+        .team-members {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .team-title {
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #00d4ff, #090979);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .member-name {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 8px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 30px;
+            margin: 5px;
+            display: inline-block;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .member-name:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.2);
+        }
+
+        /* Data visualization elements */
+        .data-visualization {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .data-stream {
+            position: absolute;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(to bottom, rgba(0,212,255,0), #00d4ff, rgba(0,212,255,0));
+            animation: dataStream 3s linear infinite;
+            opacity: 0.5;
+        }
+
+        .binary-bit {
+            position: absolute;
+            font-family: monospace;
+            font-size: 12px;
+            color: #00d4ff;
+            opacity: 0.8;
+            animation: fadeInOut 2s infinite;
+        }
+
+        /* Voice waveform */
+        .voice-waveform {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            height: 60px;
+            margin-top: 30px;
+        }
+
+        .waveform-bar {
+            width: 4px;
+            background: linear-gradient(to top, #090979, #00d4ff);
+            border-radius: 2px;
+            animation: waveformAnimation 1.5s infinite;
+        }
+
+        /* AI processing indicator */
+        .processing-indicator {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 2px;
+        }
+
+        .processing-dot {
+            animation: processingDots 1.5s infinite;
+            opacity: 0;
+            margin-left: 3px;
+        }
+
+        .processing-dot:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .processing-dot:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        /* Auto-transition progress - hidden but functionality remains */
+        .auto-transition-progress {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            z-index: 10;
+            opacity: 0; /* Hidden */
+        }
+
+        .progress-circle {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 4;
+        }
+
+        .progress-circle-path {
+            fill: none;
+            stroke: #00d4ff;
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.1s linear;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes gradientText {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        @keyframes glitchText {
+            0%, 100% {
+                transform: translateX(-5px);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateX(5px);
+                opacity: 0.1;
+            }
+        }
+
+        @keyframes dataStream {
+            0% {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0.2;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes waveformAnimation {
+            0%, 100% {
+                height: 10px;
+            }
+            50% {
+                height: 40px;
+            }
+        }
+
+        @keyframes processingDots {
+            0%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes typeWriter {
+            0% {
+                width: 0;
+                opacity: 0;
+            }
+            100% {
+                width: 100%;
+                opacity: 1;
+            }
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 3.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .logo-container {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .logo-image {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .member-name {
+                font-size: 1rem;
+                padding: 6px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .logo-container {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .logo-image {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .member-name {
+                font-size: 0.9rem;
+                padding: 5px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Digital rain canvas -->
+    <canvas id="digital-rain"></canvas>
+    
+    <!-- Neural network canvas -->
+    <canvas id="neural-canvas"></canvas>
+
+    <!-- Main container -->
+    <div class="ai-experience-container">
+        <!-- Data visualization elements -->
+        <div class="data-visualization" id="data-viz"></div>
+        
+        <!-- Content wrapper -->
+        <div class="content-wrapper" id="main-content">
+            <!-- Logo -->
+            <div class="logo-container">
+                <div class="logo-glow"></div>
+                <!-- Placeholder for logo image - replace with actual logo URL -->
+                <img src="{% static "logo.jpg" %}" alt="Byte Brains Logo" class="logo-image" id="logo-image">
+            </div>
+
+            <!-- Title -->
+            <div class="title-container">
+                <h1 class="title">NLP based Resume Screening and Job recomendation system</h1>
+            </div>
+            <p class="subtitle">Developed by <b>byte brains</b></p>
+
+         
+
+            <!-- Team members section -->
+            <div class="team-members">
+                <h3 class="team-title">Developers</h3>
+                <div class="members-list">
+                    <span class="member-name">Mahnoor Ishfaq</span>
+                    <span class="member-name">M. Umar Farooq</span>
+                    <span class="member-name">Muntaha Javed</span>
+                </div>
+            </div>
+
+               <!-- Voice waveform visualization -->
+               <div class="voice-waveform">
+                <div class="waveform-bar" style="animation-delay: -0.3s; height: 15px;"></div>
+                <div class="waveform-bar" style="animation-delay: -0.6s; height: 25px;"></div>
+                <div class="waveform-bar" style="animation-delay: -0.9s; height: 35px;"></div>
+                <div class="waveform-bar" style="animation-delay: -1.2s; height: 25px;"></div>
+                <div class="waveform-bar" style="animation-delay: -1.5s; height: 40px;"></div>
+                <div class="waveform-bar" style="animation-delay: -1.8s; height: 20px;"></div>
+                <div class="waveform-bar" style="animation-delay: -2.1s; height: 30px;"></div>
+                <div class="waveform-bar" style="animation-delay: -2.4s; height: 15px;"></div>
+                <div class="waveform-bar" style="animation-delay: -2.7s; height: 25px;"></div>
+            </div>
+
+            <!-- AI processing indicator -->
+            <div class="processing-indicator">
+                PROCESSING
+                <span class="processing-dot">.</span>
+                <span class="processing-dot">.</span>
+                <span class="processing-dot">.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-transition progress circle (hidden but functional) -->
+    <div class="auto-transition-progress">
+        <svg class="progress-circle">
+            <circle class="progress-circle-bg" cx="30" cy="30" r="25"></circle>
+            <circle class="progress-circle-path" id="progress-path" cx="30" cy="30" r="25"></circle>
+        </svg>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto fade in/out timing
+            const totalDuration = 14000; // 14 seconds
+            const fadeInTime = 2000; // 2 seconds
+            const visibleTime = 10000; // 10 seconds
+            const fadeOutTime = 2000; // 2 seconds
+            
+            // Fade in content
+            setTimeout(function() {
+                document.getElementById('main-content').classList.add('visible');
+            }, 500);
+            
+            // Fade out content after visible time
+            setTimeout(function() {
+                document.getElementById('main-content').classList.add('fade-out');
+            }, fadeInTime + visibleTime);
+            
+            // Progress circle animation (hidden but functional)
+            const progressPath = document.getElementById('progress-path');
+            const circumference = 2 * Math.PI * 25; // 2πr
+            progressPath.style.strokeDasharray = circumference;
+            progressPath.style.strokeDashoffset = circumference;
+            
+            let startTime = Date.now();
+            
+            function updateProgress() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / totalDuration, 1);
+                const dashOffset = circumference * (1 - progress);
+                
+                progressPath.style.strokeDashoffset = dashOffset;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateProgress);
+                } else {
+                    // Reload or redirect after completion
+                    setTimeout(() => {
+                        window.location.href= '/upload/';
+                    }, 500);
+                }
+            }
+            
+            updateProgress();
+            
+            // Neural network visualization
+            const neuralCanvas = document.getElementById('neural-canvas');
+            const neuralCtx = neuralCanvas.getContext('2d');
+            
+            // Set canvas dimensions
+            neuralCanvas.width = window.innerWidth;
+            neuralCanvas.height = window.innerHeight;
+            
+            // Neural network nodes
+            const nodes = [];
+            const nodeCount = Math.floor(window.innerWidth * window.innerHeight / 15000);
+            
+            // Create nodes
+            for (let i = 0; i < nodeCount; i++) {
+                nodes.push({
+                    x: Math.random() * neuralCanvas.width,
+                    y: Math.random() * neuralCanvas.height,
+                    radius: Math.random() * 2 + 1,
+                    color: `rgba(${Math.floor(Math.random() * 100)}, ${Math.floor(Math.random() * 150 + 100)}, ${Math.floor(Math.random() * 100 + 155)}, ${Math.random() * 0.5 + 0.3})`,
+                    speedX: (Math.random() - 0.5) * 0.5,
+                    speedY: (Math.random() - 0.5) * 0.5,
+                    connections: []
+                });
+            }
+            
+            // Find connections between nodes
+            nodes.forEach((node, index) => {
+                for (let i = 0; i < nodes.length; i++) {
+                    if (i !== index) {
+                        const dx = node.x - nodes[i].x;
+                        const dy = node.y - nodes[i].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 150) {
+                            node.connections.push(i);
+                        }
+                    }
+                }
+            });
+            
+            // Draw neural network
+            function drawNeuralNetwork() {
+                neuralCtx.clearRect(0, 0, neuralCanvas.width, neuralCanvas.height);
+                
+                // Draw connections
+                nodes.forEach((node, index) => {
+                    node.connections.forEach(connIndex => {
+                        const connNode = nodes[connIndex];
+                        const dx = connNode.x - node.x;
+                        const dy = connNode.y - node.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 150) {
+                            neuralCtx.beginPath();
+                            neuralCtx.strokeStyle = `rgba(0, 212, 255, ${0.1 - distance/1500})`;
+                            neuralCtx.lineWidth = 0.5;
+                            neuralCtx.moveTo(node.x, node.y);
+                            neuralCtx.lineTo(connNode.x, connNode.y);
+                            neuralCtx.stroke();
+                            
+                            // Data pulse animation along connections
+                            const pulseSpeed = Date.now() / 1000;
+                            const pulsePosition = (Math.sin(pulseSpeed + index + connIndex) + 1) / 2;
+                            
+                            const pulseX = node.x + dx * pulsePosition;
+                            const pulseY = node.y + dy * pulsePosition;
+                            
+                            neuralCtx.beginPath();
+                            neuralCtx.arc(pulseX, pulseY, 1.5, 0, Math.PI * 2);
+                            neuralCtx.fillStyle = 'rgba(0, 212, 255, 0.8)';
+                            neuralCtx.fill();
+                        }
+                    });
+                });
+                
+                // Draw nodes
+                nodes.forEach(node => {
+                    // Update position
+                    node.x += node.speedX;
+                    node.y += node.speedY;
+                    
+                    // Bounce off edges
+                    if (node.x < 0 || node.x > neuralCanvas.width) node.speedX *= -1;
+                    if (node.y < 0 || node.y > neuralCanvas.height) node.speedY *= -1;
+                    
+                    // Draw node
+                    neuralCtx.beginPath();
+                    neuralCtx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                    neuralCtx.fillStyle = node.color;
+                    neuralCtx.fill();
+                    
+                    // Add glow effect
+                    neuralCtx.beginPath();
+                    neuralCtx.arc(node.x, node.y, node.radius + 2, 0, Math.PI * 2);
+                    neuralCtx.fillStyle = 'rgba(0, 212, 255, 0.1)';
+                    neuralCtx.fill();
+                });
+                
+                requestAnimationFrame(drawNeuralNetwork);
+            }
+            
+            drawNeuralNetwork();
+            
+            // Digital rain effect
+            const rainCanvas = document.getElementById('digital-rain');
+            const rainCtx = rainCanvas.getContext('2d');
+            
+            rainCanvas.width = window.innerWidth;
+            rainCanvas.height = window.innerHeight;
+            
+            const fontSize = 14;
+            const columns = Math.floor(rainCanvas.width / fontSize);
+            const drops = [];
+            
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.floor(Math.random() * -100);
+            }
+            
+            const matrix = "01";
+            
+            function drawDigitalRain() {
+                rainCtx.fillStyle = 'rgba(5, 5, 16, 0.05)';
+                rainCtx.fillRect(0, 0, rainCanvas.width, rainCanvas.height);
+                
+                rainCtx.fillStyle = '#00d4ff';
+                rainCtx.font = `${fontSize}px monospace`;
+                
+                for (let i = 0; i < drops.length; i++) {
+                    const text = matrix.charAt(Math.floor(Math.random() * matrix.length));
+                    rainCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if (drops[i] * fontSize > rainCanvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    
+                    drops[i]++;
+                }
+                
+                requestAnimationFrame(drawDigitalRain);
+            }
+            
+            drawDigitalRain();
+            
+            // Create data streams
+            const dataViz = document.getElementById('data-viz');
+            const streamCount = 20;
+            
+            for (let i = 0; i < streamCount; i++) {
+                const stream = document.createElement('div');
+                stream.className = 'data-stream';
+                
+                // Random position
+                stream.style.left = `${Math.random() * 100}%`;
+                
+                // Random animation duration and delay
+                stream.style.animationDuration = `${3 + Math.random() * 5}s`;
+                stream.style.animationDelay = `${Math.random() * 5}s`;
+                
+                dataViz.appendChild(stream);
+            }
+            
+            // Create binary bits
+            const bitCount = 50;
+            
+            for (let i = 0; i < bitCount; i++) {
+                const bit = document.createElement('div');
+                bit.className = 'binary-bit';
+                bit.textContent = Math.random() > 0.5 ? '1' : '0';
+                
+                // Random position
+                bit.style.left = `${Math.random() * 100}%`;
+                bit.style.top = `${Math.random() * 100}%`;
+                
+                // Random animation duration and delay
+                bit.style.animationDuration = `${1 + Math.random() * 2}s`;
+                bit.style.animationDelay = `${Math.random() * 3}s`;
+                
+                dataViz.appendChild(bit);
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                neuralCanvas.width = window.innerWidth;
+                neuralCanvas.height = window.innerHeight;
+                
+                rainCanvas.width = window.innerWidth;
+                rainCanvas.height = window.innerHeight;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+django
+PyPDF2
+python-docx
+torch
+transformers
+pandas
+spacy
+sentence_transformers
+nltk

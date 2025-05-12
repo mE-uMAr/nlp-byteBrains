@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Dashboard</title>
+    <link rel="stylesheet" href="{% static 'jobs.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+</head>
+<body>
+    <!-- Canvas for background animation -->
+    <canvas id="particles-canvas"></canvas>
+    
+    <!-- Background shapes -->
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-text">Job Matching</span>
+            <span class="logo-accent"></span>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <div class="container">
+        <div class="dashboard-header">
+            
+        </div>
+
+        <!-- Text Similarity Analysis Section -->
+        <div class="similarity-section">
+            <div class="similarity-header">
+                <div class="similarity-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 3H5C3.89543 3 3 3.89543 3 5V9C3 10.1046 3.89543 11 5 11H9C10.1046 11 11 10.1046 11 9V5C11 3.89543 10.1046 3 9 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 3H15C13.8954 3 13 3.89543 13 5V9C13 10.1046 13.8954 11 15 11H19C20.1046 11 21 10.1046 21 9V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 13H5C3.89543 13 3 13.8954 3 15V19C3 20.1046 3.89543 21 5 21H9C10.1046 21 11 20.1046 11 19V15C11 13.8954 10.1046 13 9 13Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 13H15C13.8954 13 13 13.8954 13 15V19C13 20.1046 13.8954 21 15 21H19C20.1046 21 21 20.1046 21 19V15C21 13.8954 20.1046 13 19 13Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h2 class="similarity-title">Cosine Similarity Analysis</h2>
+            </div>
+            <div class="similarity-content">
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="similarity-input-container" >
+                      <textarea name="job_description" class="similarity-textarea" placeholder="Enter job description, requirements, or any text to analyze similarity with your profile..."></textarea>
+                      <button id="submittion" type="submit" class="similarity-button">Analyze Similarity</button>
+                    </div>
+                  </form>                  
+                
+                <div id="similarity-results" class="similarity-results">
+                    
+                    <div class="similarity-score-container" id="inp_cont">
+                        <div class="similarity-score-label" id="inp_cont">Similarity Score</div>
+                        <div class="similarity-score-value" id="inp_cont">
+                            <div id="similarity-percentage" class="similarity-percentage">{% if similarity != None %}{{similarity}}{% else %}0{% endif %}%</div>
+                            <div class="similarity-meter">
+                                <div id="similarity-meter-fill" class="similarity-meter-fill" style="width: {% if similarity != None %}{{similarity}}{% else %}0{% endif %}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                        {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}" role="alert" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; background-color: {% if message.tags == 'error' %}rgba(239, 68, 68, 0.1){% elif message.tags == 'success' %}rgba(16, 185, 129, 0.1){% endif %}; color: {% if message.tags == 'error' %}#ef4444{% elif message.tags == 'success' %}#10b981{% endif %}; border-left: 3px solid {% if message.tags == 'error' %}#ef4444{% elif message.tags == 'success' %}#10b981{% endif %}; animation: fadeIn 0.3s ease;">
+                                <div class="alert-icon" style="display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    {% if message.tags == 'error' %}
+                                        <svg class="alert-svg" viewBox="0 0 24 24" style="width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; fill: none;"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                    {% elif message.tags == 'success' %}
+                                        <svg class="alert-svg" viewBox="0 0 24 24" style="width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2; fill: none;"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    {% endif %}
+                                </div>
+                                <p style="margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.95rem; line-height: 1.5;">{{ message }}</p>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    <div class="loader" id="loader"></div>
+                </div>
+            </div>
+        </div>
+
+    <script src="{% static 'jobs.js' %}"></script>
+
+    <script>
+        const loader = document.getElementById("loader");
+        const scoreTab = document.getElementById("inp_cont");
+        const btn = document.getElementById("submittion");
+      
+        btn.addEventListener("click", () => {
+          loader.style.display = "block";
+          scoreTab.style.display = "none";
+          setTimeout(function () {
+            loader.style.display = "none";
+            scoreTab.style.display = "block";
+          }, 300000);
+        });
+      </script>
+      
+</body>
+</html>
