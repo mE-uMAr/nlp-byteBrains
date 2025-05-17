@@ -3,15 +3,12 @@ import torch
 import torch.nn.functional as F
 import os
 
-# Step 1: Load your fine-tuned model from local directory
 model_path = "mehar27/resume-classifier"
 
-# Load tokenizer and model from local files
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 model = AutoModelForSequenceClassification.from_pretrained(model_path)
-model.eval()  # Set model to evaluation mode
+model.eval()  
 
-# Step 2: Define your label mapping
 labels = ['Accountant', 'Advocate', 'Agriculture', 'Apparel', 'Architecture', 'Arts',
           'Automobile', 'Aviation', 'Banking', 'Blockchain', 'BPO', 'Building and Construction',
           'Business Analyst', 'Civil Engineer', 'Consultant', 'Data Science', 'Database',
@@ -22,7 +19,6 @@ labels = ['Accountant', 'Advocate', 'Agriculture', 'Apparel', 'Architecture', 'A
           'PMO', 'Public Relations', 'Python Developer', 'React Developer', 'Sales',
           'SAP Developer', 'SQL Developer', 'Testing', 'Web Designing']
 
-# Step 3: Prediction function
 def predict_category(resume_text):
     inputs = tokenizer(resume_text, return_tensors="pt", truncation=True, padding=True)
     with torch.no_grad():

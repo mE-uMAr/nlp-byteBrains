@@ -4,13 +4,11 @@ from .models import *
 from django.conf import settings
 import uuid
 from django.contrib import messages
-from .utils import dictResponse, listResponse, strResponse
-from .textExtractor import cleaner
 from .cosine_similarity import similarity
-# from models.text_extractor import main as extractor
-# from models.ner import extract_info
-# from models.classifier import predict_category
-# from models.skillsExtractor import main as skills_extractor
+from models.text_extractor import main as extractor
+from models.ner import extract_info
+from models.classifier import predict_category
+from models.skillsExtractor import main as skills_extractor
 
 
 def visual(request):
@@ -24,15 +22,10 @@ def upload(request):
         resume_path = resume.resume.name
         file_path = os.path.join(settings.MEDIA_ROOT, resume_path)
 
-        text = cleaner(file_path)
-        ner_dict = dictResponse(text)
-        categ = strResponse(text)
-        skills = listResponse(text)
-        # manual configurations
-        # text = extractor(file_path)
-        # ner_dict = extract_info(text)
-        # categ = predict_category(text)
-        # skills = skills_extractor(text)
+        text = extractor(file_path)
+        ner_dict = extract_info(text)
+        categ = predict_category(text)
+        skills = skills_extractor(text)
 
         skillsModel = Skills.objects.create(
             resume = resume,
